@@ -32,7 +32,8 @@
         });
     
 ###注意事项： 
-     obj 必须是对象 例如：document.querySelector("#test") 或者 document.getElementById("test") 
+     obj 必须是对象 例如：document.querySelector("#test") 或者 document.getElementById("test")
+     【此dom非input对象！而是他的父级，插件会动态插入一个input，插入的input无样式需要自己定义】
      type 【image/】 这个前缀要写，我也太懒了，下个版本在简化它  
      multiple  布尔型，1或true开启多图上传（限PC端） 
      zoomWidth 缩放的宽度，竖行（宽<高）的图片，会小于这个值：（原始高*zoomWidth/原始宽度）*1.4 
