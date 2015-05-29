@@ -32,14 +32,14 @@
         });
     
 ###注意事项： 
-     obj 必须是对象 例如：document.querySelector("#test") 或者 document.getElementById("test") <br />
-     type 【image/】 这个前缀要写，我也太懒了，下个版本在简化它  <br />
-     multiple  布尔型，1或true开启多图上传（限PC端） <br />
-     zoomWidth 缩放的宽度，竖行（宽<高）的图片，会小于这个值：（原始高*zoomWidth/原始宽度）*1.4 <br />
-     quality 照片质量（0~1.0）浮点型<br />
-     onProgress，onSuccess，onFailure，onSelect 对应的事件<br />
-     fileContainer 这个无需配置 请保持原始结构 用于多图上传<br />
-     variableName 文件上传使用的变量名，主要用于后端<br />
+     obj 必须是对象 例如：document.querySelector("#test") 或者 document.getElementById("test") 
+     type 【image/】 这个前缀要写，我也太懒了，下个版本在简化它  
+     multiple  布尔型，1或true开启多图上传（限PC端） 
+     zoomWidth 缩放的宽度，竖行（宽<高）的图片，会小于这个值：（原始高*zoomWidth/原始宽度）*1.4 
+     quality 照片质量（0~1.0）浮点型
+     onProgress，onSuccess，onFailure，onSelect 对应的事件
+     fileContainer 这个无需配置 请保持原始结构 用于多图上传
+     variableName 文件上传使用的变量名，主要用于后端
 ###3、方法
       t.error(String); 错误弹出层
       t.succ(String); 成功弹出层
