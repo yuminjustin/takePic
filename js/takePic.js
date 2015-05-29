@@ -34,7 +34,7 @@
                 fileLists: {}
             },
             /*文件上传使用的变量名，主要用于后端*/
-            variableName: 'SKFILE'
+            variableName: 'takePic'
         };
         this.opts = j.concat(optsInitial, opts);
         init(this);
