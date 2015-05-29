@@ -27,22 +27,24 @@
             onFailure: function () {},
             /*文件选择事件*/
             onSelect: function () {},
-            /*文件集合*/
+            /*文件集合 多文件*/
             fileContainer: {
                 length: 0,
                 index: 1,
                 fileLists: {}
-            }
+            },
+            /*文件上传使用的变量名，主要用于后端*/
+            variableName: 'SKFILE'
         };
         this.opts = j.concat(optsInitial, opts);
         init(this);
     };
     takePic.prototype.error = function (str) {
         overlay(str, 0);
-    }
+    };
     takePic.prototype.succ = function (str) {
         overlay(str, 1);
-    }
+    };
 
     function init(obj) {
         var inp = document.createElement("input");
@@ -50,8 +52,10 @@
         inp.setAttribute("accept", "image/*;capture=camera");
         inp.setAttribute("id", "takePic");
         inp.setAttribute("capture", "camera");
-        if (obj.opts.multiple)
-            inp.setAttribute("multiple", "true");
+        if (obj.opts.multiple) {
+            if (!navigator.userAgent.match(/iphone/i) && !navigator.userAgent.match(/Android/i))
+                inp.setAttribute("multiple", "true");
+        }
         obj.opts.obj.appendChild(inp);
         obj.inp = inp;
         events(obj);
@@ -69,18 +73,13 @@
                     else if (!temp.size || temp.size > obj.opts.maxSize)
                         obj.error("您选择的文件过大");
                     else {
-                        var URL = window.URL || window.webkitURL;
-                        var blob = URL.createObjectURL(temp);
-                        var img = new Image();
-                        img.src = blob;
-                        img.file = temp;
-                        imgs.push(img);
-                        var upload = function () {
+                        var upload = function (img) {
+                            imgs.push(img);
                             if (imgs.length == files.length)
                                 requestUpload(files, obj);
-                        }
-                        readExif(temp, function (o) {
-                            zoomImg(img, o, obj, upload);
+                        };
+                        readExif(temp, function (o, file) {
+                            zoomImg(file, o, obj, upload);
                         });
                     }
                 }
@@ -119,17 +118,17 @@
             ol.style.cssText += styles(2);
         }, 600);
         ol.onclick = function () {
-            close()
+            close();
         };
         setTimeout(function () {
-            close()
+            close();
         }, 3600);
         var close = function () {
             ol.style.cssText += styles(5);
             if (ol) j.transitionend(ol, function () {
                 document.body.removeChild(ol);
-            })
-        }
+            });
+        };
     }
 
     function styles(t) {
@@ -176,18 +175,30 @@
         reader.onload = function (e) {
             var buffer = e.target.result,
                 dataView = new DataView(buffer),
-                orientation = dataView.getUint16(54, true) || 1;
+                orientation;
+            if (navigator.userAgent.match(/iphone/i)){
+                orientation = dataView.getUint32(48, true)|| 1;
+                orientation = orientation/256;
+            }
+            else 
+                orientation = dataView.getUint16(54, true)|| 1;
             if (orientation > 8 || orientation < 1) orientation = 1;
-            fn(orientation);
-        }
+            fn(orientation, file);
+        };
     }
 
-    function zoomImg(img, orien, obj, fn) {
-        var canvas = document.createElement('canvas'),
+    function zoomImg(file, orien, obj, fn) {
+        var URL = window.URL || window.webkitURL,
+            blob = URL.createObjectURL(file),
+            img = new Image(),
+            canvas = document.createElement('canvas'),
             ctx, base64;
+        img.src = blob;
+        img.file = file;
         img.onload = function () {
-            var w = img.width,
-                h = img.height,
+            var that = this,
+                w = that.width,
+                h = that.height,
                 scale = w / h;
             w = w > obj.opts.zoomWidth ? obj.opts.zoomWidth : w;
             h = w / scale;
@@ -198,9 +209,9 @@
                 if (orien == 3) {
                     ctx.translate(canvas.width, canvas.height);
                     ctx.scale(-1, -1);
-                    ctx.drawImage(img, canvas.width - w, canvas.height - h, img.width, img.height, 0, 0, w, h);
+                    ctx.drawImage(that, canvas.width - w, canvas.height - h, that.width, that.height, 0, 0, w, h);
                 } else {
-                    ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, w, h);
+                    ctx.drawImage(that, 0, 0, that.width, that.height, 0, 0, w, h);
                 }
             } else if (orien == 6 || orien == 8) { /*竖拍*/
                 w = parseInt(w * 1.4);
@@ -215,12 +226,12 @@
                     ctx.rotate(-90 * Math.PI / 180);
                     ctx.translate(-w, 0);
                 }
-                ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, w, h);
+                ctx.drawImage(that, 0, 0, that.width, that.height, 0, 0, w, h);
             }
             base64 = canvas.toDataURL('image/jpeg', obj.opts.quality);
-            img.file.base64Resize = base64;
-            fn(img);
-        }
+            that.file.base64Resize = base64;
+            fn(that);
+        };
     }
 
     function requestUpload(files, obj) {
@@ -276,9 +287,9 @@
             httpRequest.open("POST", self.uploadURL, true);
             var formData = new FormData();
             for (var i = 0; i < files.length; i++) {
-                formData.append('takepic[' + i + '][name]', files[i].name);
-                formData.append('takepic[' + i + '][size]', files[i].size);
-                formData.append('takepic[' + i + '][data]', files[i].base64Resize);
+                formData.append(self.variableName + '[' + i + '][name]', files[i].name);
+                formData.append(self.variableName + '[' + i + '][size]', files[i].size);
+                formData.append(self.variableName + '[' + i + '][data]', files[i].base64Resize);
             }
             httpRequest.send(formData);
         }
